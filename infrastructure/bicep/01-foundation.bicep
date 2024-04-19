@@ -51,67 +51,8 @@ module vnet './modules/virtualNetwork/virtualNetwork.bicep' = {
     location: location
     addressPrefixes: addressPrefixes
     virtualNetworkName: vnetName
+    subnetConfiguration: subnetConfigurations
   }
-}
-
-// For Subnets, we need to ensure the deployment is serialized, so setup manual
-// dependencies to ensure subnets don't deploy in parallel since that leads to an
-// operation conflict during deployment :(
-module appSvcInSubnet './modules/virtualNetwork/subnet.bicep' = {
-  name: appServiceInboundSubnetDeploymentName
-  params: {
-    addressPrefix: subnetConfigurations.appServiceInboundSubnet.addressPrefix
-    subnetName: subnetConfigurations.appServiceInboundSubnet.name
-    vnetName: vnet.outputs.name
-  }
-}
-
-module appSvcOutSubnet './modules/virtualNetwork/subnet.bicep' = {
-  name: appServiceOutboundSubnetDeploymentName
-  params: {
-    addressPrefix: subnetConfigurations.appServiceOutboundSubnet.addressPrefix
-    subnetName: subnetConfigurations.appServiceOutboundSubnet.name
-    vnetName: vnet.outputs.name
-  }
-  dependsOn: [
-    appSvcInSubnet
-  ]
-}
-
-module keyVaultSubnet './modules/virtualNetwork/subnet.bicep' = {
-  name: keyVaultSubnetDeploymentName
-  params: {
-    addressPrefix: subnetConfigurations.keyVaultSubnet.addressPrefix
-    subnetName: subnetConfigurations.keyVaultSubnet.name
-    vnetName: vnet.outputs.name
-  }
-  dependsOn: [
-    appSvcOutSubnet
-  ]
-}
-
-module apimSubnet './modules/virtualNetwork/subnet.bicep' = {
-  name: apimSubnetDeploymentName
-  params: {
-    addressPrefix: subnetConfigurations.apimSubnet.addressPrefix
-    subnetName: subnetConfigurations.apimSubnet.name
-    vnetName: vnet.outputs.name
-  }
-  dependsOn: [
-    keyVaultSubnet
-  ]
-}
-
-module appGwSubnet './modules/virtualNetwork/subnet.bicep' = {
-  name: appGwSubnetDeploymentName
-  params: {
-    addressPrefix: subnetConfigurations.appGwSubnet.addressPrefix
-    subnetName: subnetConfigurations.appGwSubnet.name
-    vnetName: vnet.outputs.name
-  }
-  dependsOn: [
-    apimSubnet
-  ]
 }
 
 module kv './modules/keyVault/privateKeyVault.bicep' = {
@@ -121,7 +62,7 @@ module kv './modules/keyVault/privateKeyVault.bicep' = {
     deploymentId: deploymentId
     keyVaultName: keyVaultName
     logAnalyticsWorkspaceResourceId: laws.outputs.id 
-    servicesSubnetResourceId: keyVaultSubnet.outputs.subnetId
+    servicesSubnetResourceId: vnet.outputs.kvSubnetId
     vnetName: vnet.outputs.name
   }
 }
