@@ -10,6 +10,9 @@ param location string
 @description('A flag indicating whether the IP address will be zone redundant')
 param zoneRedundant bool = false
 
+@description('The ID of the Log Analytics workspace to send diagnostics data to')
+param logAnalyticsWorkspaceId string
+
 var zones = zoneRedundant ? ['1', '2', '3'] : []
 
 resource pip 'Microsoft.Network/publicIPAddresses@2019-11-01' = {
@@ -25,6 +28,24 @@ resource pip 'Microsoft.Network/publicIPAddresses@2019-11-01' = {
     publicIPAllocationMethod: 'Static'
   }
   zones: zones
+}
+
+resource laws 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'laws'
+  scope: pip
+  properties: {
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+      {
+        categoryGroup: 'audit'
+        enabled: true
+      }
+    ]
+  }
 }
 
 output id string = pip.id

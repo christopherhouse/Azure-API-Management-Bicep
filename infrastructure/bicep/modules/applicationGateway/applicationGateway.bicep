@@ -94,7 +94,8 @@ resource appGwPip 'Microsoft.Network/publicIPAddresses@2023-09-01' = {
 }
 
 var appGatewayIpConfigName = 'appGatewayIpConfig'
-var sslCertNmae = 'www'
+var sslCertNmae = 'api-management'
+var frontEndConfigName = 'appGwPublicFrontendIpIPv4'
 
 resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
   name: appGatewayName
@@ -136,8 +137,8 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     sslProfiles: []
     frontendIPConfigurations: [
       {
-        name: 'appGwPublicFrontendIpIPv4'
-        id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, 'appGwPublicFrontendIpIPv4')
+        name: frontEndConfigName
+        id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, frontEndConfigName)
         properties: {
           privateIPAllocationMethod: 'Dynamic'
           publicIPAddress: {
@@ -193,7 +194,7 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
         id: resourceId('Microsoft.Network/applicationGateways/httpListeners', appGatewayName, 'publicHttps')
         properties: {
           frontendIPConfiguration: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, 'appGwPublicFrontendIpIPv4')
+            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, frontEndConfigName)
           }
           frontendPort: {
             id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', appGatewayName, 'port_443')

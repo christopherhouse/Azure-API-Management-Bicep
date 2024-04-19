@@ -20,14 +20,25 @@ This repository contains the Bicep templates and modules for deploying Azure API
  ┃ ┃ ┃ ┣ 📂privateEndpoint
  ┃ ┃ ┃ ┣ 📂publicIpAddress
  ┃ ┃ ┃ ┗ 📂virtualNetwork
+ ┃ ┃ ┣ 📂scripts
+ ┃ ┃ ┃ ┣ 📜Deploy-Foundation.ps1
+ ┃ ┃ ┃ ┗ 📜Deploy-Main.ps1 
  ┃ ┃ ┣ 📜01-foundation.bicep
  ┃ ┃ ┗ 📜02-main.bicep
  ┃ ┗ 📜README.md
  ┗ 📜.gitignore
 ```
 
-## Modules 🧩
-This repository contains several Bicep modules that are used to deploy various Azure resources. These modules are reusable and can be used across different Bicep templates.
+## Key Vault and Managed Identity 🗝️
+The API Management and Application Gateway modules both deploy a User Assigned Managed Identity that is used to grant these services access to the Key Vault deployed by 01-foundation.bicep.  In addition to deploying the Managed Identity, these modules also grant the Azure RBAC role Key Vault Secrets User to the Managed Identity.  This allows the Managed Identity to retrieve the TLS certificate from the Key Vault and use it for the Application Gateway and for API Management to read Named Values from the Key Vault.
+
+## Log Analytics and Diagnostic Logs
+The Bicep templates in this repository deploy a Log Analytics Workspace.  A number of the services deployed in this repository have diagnostic settings that are configured to send logs to the Log Analytics Workspace.  The diagnostic settings are configured to send logs to the Log Analytics Workspace for the following services:
+- API Management
+- Application Gateway
+- Key Vault
+- Network Security Group
+- Public IP Address
 
 ## Templates 📝
 ### 01-foundation.bicep

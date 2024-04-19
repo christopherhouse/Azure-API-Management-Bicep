@@ -65,6 +65,7 @@ module apimPip './modules/publicIpAddress/publicIpAddress.bicep' = {
   params: {
     location: location
     publicIpAddressName: apimPipName
+    logAnalyticsWorkspaceId: laws.id
   }
 }
 
