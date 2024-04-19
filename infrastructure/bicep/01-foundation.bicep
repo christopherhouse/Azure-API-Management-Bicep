@@ -3,6 +3,7 @@ param environmentSuffix string
 param location string
 param addressPrefixes array
 param subnetConfigurations subnetConfigurationsType
+param logAnalyticsRetentionDays int
 param deploymentId string = substring(newGuid(), 0, 8)
 
 @export()
@@ -32,6 +33,18 @@ var keyVaultSubnetDeploymentName = '${vnetName}-${subnetConfigurations.keyVaultS
 var apimSubnetDeploymentName = '${vnetName}-${subnetConfigurations.apimSubnet.name}-${deploymentId}'
 var appGwSubnetDeploymentName = '${vnetName}-${subnetConfigurations.appGwSubnet.name}-${deploymentId}'
 
+// Key Vault
+var keyVaultName = '${workloadName}-${environmentSuffix}-kv'
+var keyVaultDeploymentName = '${keyVaultName}-${deploymentId}'
+
+// Log Analytics
+var logAnalyticsWorkspaceName = '${workloadName}-${environmentSuffix}-laws'
+var logAnalyticsWorkspaceDeploymentName = '${logAnalyticsWorkspaceName}-${deploymentId}'
+
+// App Insights
+var appInsightsName = '${workloadName}-${environmentSuffix}-ai'
+var appInsightsDeploymentName = '${appInsightsName}-${deploymentId}'
+
 module vnet './modules/virtualNetwork/virtualNetwork.bicep' = {
   name: vnetDeploymentName
   params: {
@@ -43,7 +56,7 @@ module vnet './modules/virtualNetwork/virtualNetwork.bicep' = {
 
 // For Subnets, we need to ensure the deployment is serialized, so setup manual
 // dependencies to ensure subnets don't deploy in parallel since that leads to an
-// operation conflict during deployment :()
+// operation conflict during deployment :(
 module appSvcInSubnet './modules/virtualNetwork/subnet.bicep' = {
   name: appServiceInboundSubnetDeploymentName
   params: {
@@ -99,4 +112,36 @@ module appGwSubnet './modules/virtualNetwork/subnet.bicep' = {
   dependsOn: [
     apimSubnet
   ]
+}
+
+module kv './modules/keyVault/privateKeyVault.bicep' = {
+  name: keyVaultDeploymentName
+  params: {
+    location: location
+    deploymentId: deploymentId
+    keyVaultName: keyVaultName
+    logAnalyticsWorkspaceResourceId: laws.outputs.id 
+    servicesSubnetResourceId: keyVaultSubnet.outputs.subnetId
+    vnetName: vnet.outputs.name
+  }
+}
+
+module laws './modules/observability/logAnalyticsWorkspace.bicep' = {
+  name: logAnalyticsWorkspaceDeploymentName
+  params: {
+    location: location
+    logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
+    retentionInDays: logAnalyticsRetentionDays
+  }
+}
+
+module ai './modules/observability/applicationInsights.bicep' = {
+  name: appInsightsDeploymentName
+  params: {
+    location: location
+    appInsightsName: appInsightsName
+    buildId: deploymentId
+    keyVaultName: keyVaultName
+    logAnalyticsWorkspaceId: laws.outputs.id
+  }
 }

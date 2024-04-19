@@ -30,3 +30,4 @@ param subnetConfigurations = {
     delegation: 'none'
   }
 }
+param logAnalyticsRetentionDays = 90
