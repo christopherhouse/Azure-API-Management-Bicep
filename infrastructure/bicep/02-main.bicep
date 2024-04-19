@@ -102,7 +102,7 @@ module appGw './modules/applicationGateway/applicationGateway.bicep' = {
     maxInstances: appGatewayMaxInstances
     skuName: appGatewaySkuName
     vnetName: vnetName
-    webAppBackendHostName: apim.outputs.hostName
-    webAppSslCertKeyVaultSecretName: appGatewayTslCertSecretName
+    apimBackendHostName: apim.outputs.hostName
+    apimSslCertKeyVaultSecretName: appGatewayTslCertSecretName
   }
 }
