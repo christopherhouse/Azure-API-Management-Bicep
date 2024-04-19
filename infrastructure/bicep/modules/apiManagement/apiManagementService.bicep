@@ -49,7 +49,7 @@ param hostNameConfigurations hostNameConfigurationsType = []
 param zoneRedundant bool = false
 
 @description('The unique identifier for the deployment')
-param buildId string
+param deploymentId string
 
 @export()
 type hostNameConfigurationType = {
@@ -151,7 +151,7 @@ resource diags 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 module dns '../dns/privateDnsZone.bicep' = {
-  name: '${apiManagementService.name}-dns-${buildId}'
+  name: '${apiManagementService.name}-dns-${deploymentId}'
   params: {
     vnetResourceId: vnetResourceId
     zoneName: 'azure-api.net'
@@ -159,7 +159,7 @@ module dns '../dns/privateDnsZone.bicep' = {
 }
 
 module aRecords '../dns/aRecord.bicep' = {
-  name: '${apiManagementService.name}-dns-a-records-${buildId}'
+  name: '${apiManagementService.name}-dns-a-records-${deploymentId}'
   params: {
     zoneName: dns.outputs.zoneName
     ipAddress: apiManagementService.properties.privateIPAddresses[0]
@@ -175,3 +175,4 @@ module aRecords '../dns/aRecord.bicep' = {
 output id string = apiManagementService.id
 output name string = apiManagementService.name
 output privateIpAddress string = apiManagementService.properties.privateIPAddresses[0]
+output hostName string = apiManagementService.properties.hostnameConfigurations[0].hostName
