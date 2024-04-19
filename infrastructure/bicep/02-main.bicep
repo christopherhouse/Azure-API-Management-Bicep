@@ -47,11 +47,6 @@ resource apimSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' exist
   parent: vnet
 }
 
-resource appGwSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' existing = {
-  name: appGwSubnetName
-  parent: vnet
-}
-
 resource laws 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   name: logAnalyticsWorkspaceName
   scope: resourceGroup()
@@ -61,7 +56,7 @@ module apimUami './modules/managedIdentity/userAssignedManagedIdentity.bicep' = 
   name: apimUamiDeploymentName
   params: {
     location: location
-    managedIdentityName: apimUamiDeploymentName 
+    managedIdentityName: apimUamiName 
   }
 }
 

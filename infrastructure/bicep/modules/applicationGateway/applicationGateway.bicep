@@ -137,7 +137,6 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     frontendIPConfigurations: [
       {
         name: 'appGwPublicFrontendIpIPv4'
-        //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/frontendIPConfigurations/appGwPublicFrontendIpIPv4'
         id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, 'appGwPublicFrontendIpIPv4')
         properties: {
           privateIPAllocationMethod: 'Dynamic'
@@ -150,7 +149,6 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     frontendPorts: [
       {
         name: 'port_443'
-        //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/frontendPorts/port_443'
         id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', appGatewayName, 'port_443')
         properties: {
           port: 443
@@ -160,12 +158,11 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     backendAddressPools: [
       {
         name: 'webAppBackendPool'
-        //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/backendAddressPools/webAppBackendPool'
         id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', appGatewayName, 'webAppBackendPool')
         properties: {
           backendAddresses: [
             {
-              fqdn: 'bplus-loc-appsvc.azurewebsites.net'
+              fqdn: webAppBackendHostName
             }
           ]
         }
@@ -175,7 +172,6 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     backendHttpSettingsCollection: [
       {
         name: 'backendHttpsSettings'
-        //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/backendHttpSettingsCollection/backendHttpsSettings'
         id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', appGatewayName, 'backendHttpsSettings')
         properties: {
           port: 443
@@ -185,7 +181,6 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
           hostName: webAppBackendHostName
           requestTimeout: 20
           probe: {
-            //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/probes/backendHttpsSettings22ef1a7b-18f6-4680-8469-dc2c9e0a009_'
             id: resourceId('Microsoft.Network/applicationGateways/probes', appGatewayName, 'backendHttpsSettings22ef1a7b-18f6-4680-8469-dc2c9e0a009_')
           }
         }
@@ -195,15 +190,12 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     httpListeners: [
       {
         name: 'publicHttps'
-        //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/httpListeners/publicHttps'
         id: resourceId('Microsoft.Network/applicationGateways/httpListeners', appGatewayName, 'publicHttps')
         properties: {
           frontendIPConfiguration: {
-            //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/frontendIPConfigurations/appGwPublicFrontendIpIPv4'
             id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, 'appGwPublicFrontendIpIPv4')
           }
           frontendPort: {
-            //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/frontendPorts/port_443'
             id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', appGatewayName, 'port_443')
           }
           protocol: 'Https'
@@ -221,21 +213,17 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     requestRoutingRules: [
       {
         name: 'webAppRule'
-        //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/requestRoutingRules/webAppRule'
         id: resourceId('Microsoft.Network/applicationGateways/requestRoutingRules', appGatewayName, 'webAppRule')
         properties: {
           ruleType: 'Basic'
           priority: 1
           httpListener: {
-            //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/httpListeners/publicHttps'
             id: resourceId('Microsoft.Network/applicationGateways/httpListeners', appGatewayName, 'publicHttps')
           }
           backendAddressPool: {
-            //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/backendAddressPools/webAppBackendPool'
             id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', appGatewayName, 'webAppBackendPool')
           }
           backendHttpSettings: {
-            //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/backendHttpSettingsCollection/backendHttpsSettings'
             id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', appGatewayName, 'backendHttpsSettings')
           }
         }
@@ -245,11 +233,10 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     probes: [
       {
         name: 'backendHttpsSettings22ef1a7b-18f6-4680-8469-dc2c9e0a009_'
-        //id: '${applicationGateways_cmh_bplus_loc_appgw_name_resource.id}/probes/backendHttpsSettings22ef1a7b-18f6-4680-8469-dc2c9e0a009_'
         id: resourceId('Microsoft.Network/applicationGateways/probes', appGatewayName, 'backendHttpsSettings22ef1a7b-18f6-4680-8469-dc2c9e0a009_')
         properties: {
           protocol: 'Https'
-          path: '/'
+          path: '/status-0123456789abcdef'
           interval: 30
           timeout: 30
           unhealthyThreshold: 3

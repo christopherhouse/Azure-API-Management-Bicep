@@ -15,5 +15,4 @@ $deploymentName = (New-Guid).Guid.Substring(0,8)
 az deployment group create --name $deploymentName `
                            --template-file ..\02-main.bicep `
                            -g $ResourceGroupName `
-                           --parameters ..\parameters\02-main.$EnvironmentName.bicepparam `
-                           --parameters deploymentId=$deploymentName
+                           --parameters ..\parameters\02-main.$EnvironmentName.bicepparam
