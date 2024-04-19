@@ -11,11 +11,13 @@ This repository contains the Bicep templates and modules for deploying Azure API
  ┃ ┃ ┣ 📂modules
  ┃ ┃ ┃ ┣ 📂apiManagement
  ┃ ┃ ┃ ┣ 📂applicationGateway
+ ┃ ┃ ┃ ┣ 📂applicationInsights
  ┃ ┃ ┃ ┣ 📂dns
  ┃ ┃ ┃ ┣ 📂keyVault
- ┃ ┃ ┃ ┣ 📂logAnalyticsWorkspace
+ ┃ ┃ ┃ ┣ 📂logAnalytics
  ┃ ┃ ┃ ┣ 📂managedIdentity
  ┃ ┃ ┃ ┣ 📂networkSecurityGroup
+ ┃ ┃ ┃ ┣ 📂privateEndpoint
  ┃ ┃ ┃ ┣ 📂publicIpAddress
  ┃ ┃ ┃ ┗ 📂virtualNetwork
  ┃ ┃ ┣ 📜01-foundation.bicep
@@ -24,24 +26,65 @@ This repository contains the Bicep templates and modules for deploying Azure API
  ┗ 📜.gitignore
 ```
 
-| Folder | Description |
-| --- | --- |
-| `apiManagement` | Contains the Bicep module for deploying API Management Service |
-| `applicationGateway` | Contains the Bicep module for deploying Application Gateway |
-| `dns` | Contains the Bicep modules for managing DNS records |
-| `keyVault` | Contains the Bicep module for deploying Key Vault |
-| `logAnalyticsWorkspace` | Contains the Bicep module for deploying Log Analytics Workspace |
-| `managedIdentity` | Contains the Bicep module for deploying Managed Identity |
-| `networkSecurityGroup` | Contains the Bicep module for deploying Network Security Group |
-| `publicIpAddress` | Contains the Bicep module for deploying Public IP Address |
-| `virtualNetwork` | Contains the Bicep module for deploying Virtual Network |
-
 ## Modules 🧩
 This repository contains several Bicep modules that are used to deploy various Azure resources. These modules are reusable and can be used across different Bicep templates.
 
 ## Templates 📝
-- `01-foundation.bicep`: This template deploys the foundational resources for the Azure API Management infrastructure.
-- `02-main.bicep`: This template deploys the main resources including API Management Service, Application Gateway, and associated DNS records.
+### 01-foundation.bicep
+This template deploys the foundational resources for the Azure API Management infrastructure, including Virtual Network/subnets, Network Security Group, Log Analytics Workspace, Application Insights, and Key Vault.
+
+#### Parameters
+
+| Parameter Name | Description | Type | Default Value |
+| --- | --- | --- | --- |
+| `workloadName` | The name of the workload | `string` | N/A |
+| `environmentSuffix` | The suffix for the environment | `string` | N/A |
+| `location` | The Azure region where the resources will be deployed | `string` | N/A |
+| `addressPrefixes` | The address prefixes for the virtual network | `array` | N/A |
+| `subnetConfigurations` | The configurations for the subnets | `subnetConfigurationsType` | N/A |
+| `logAnalyticsRetentionDays` | The number of days to retain logs in Log Analytics | `int` | N/A |
+| `deploymentId` | The ID of the deployment | `string` | `substring(newGuid(), 0, 8)` |
+
+### 02-main.bicep
+This template deploys the main resources including API Management Service, Application Gateway, and associated DNS records.
+
+#### Parameters
+
+| Parameter Name | Description | Type | Default Value |
+| --- | --- | --- | --- |
+| `workloadName` | The name of the workload, used the generate resource names in the form of `'${workloadName}-${environmentSuffix}-${resourceTypeAbbreviation}'` | `string` | N/A |
+| `environmentSuffix` | The identifier for the environment, used the generate resource names in the form of `'${workloadName}-${environmentSuffix}-${resourceTypeAbbreviation}'` | `string` | N/A |
+| `location` | The Azure region where the resources will be deployed | `string` | N/A |
+| `vnetName` | The name of the virtual network | `string` | N/A |
+| `apimSubnetName` | The name of the subnet for API Management | `string` | N/A |
+| `appGwSubnetName` | The name of the subnet for Application Gateway | `string` | N/A |
+| `logAnalyticsWorkspaceName` | The name of the Log Analytics Workspace | `string` | N/A |
+| `keyVaultName` | The name of the Key Vault | `string` | N/A |
+| `apimPublisherEmailAddress` | The email address of the API Management publisher | `string` | N/A |
+| `apimPublisherOrganizationName` | The organization name of the API Management publisher | `string` | N/A |
+| `apimSkuName` | The SKU name for API Management | `string` | N/A |
+| `apimSkuCapacity` | The capacity for API Management SKU | `int` | N/A |
+| `apimVnetIntegrationMode` | The integration mode for API Management Virtual Network | `string` | N/A |
+| `appGatewayMinInstances` | The minimum number of instances for the Application Gateway | `int` | N/A |
+| `appGatewayMaxInstances` | The maximum number of instances for the Application Gateway | `int` | N/A |
+| `appGatewaySkuName` | The SKU name for the Application Gateway | `string` | N/A |
+| `appGatewayTslCertSecretName` | The secret name for the Application Gateway TLS certificate | `string` | N/A |
+| `deploymentId` | The ID of the deployment | `string` | `substring(newGuid(), 0, 8)` |
 
 ## Deployment 🚀
-This repository contains two PowerShell scripts that are used to deploy the `01-foundation.bicep` and `02-main.bicep` templates. These scripts take care of setting up the necessary Azure context, validating the Bicep templates, and deploying the resources to Azure.
+This repository contains two PowerzShell scripts that are used to deploy the `01-foundation.bicep` and `02-main.bicep` templates. These scripts take care of setting up the necessary Azure context, validating the Bicep templates, and deploying the resources to Azure.  To deploy these scripts, create parameter files for `01-foundation.bicep` and `02-main.bicep` templates.  Parameter files should be .`bicepparam` format and named as `01-foundation[environment name].parameters.bicep` and `02-main.parameters.bicep`.  The scripts will automatically pick up the parameter files and deploy the resources to Azure.
+
+### Deployment Steps
+1. Create parameter files as mentioned above
+2. Run Deploy-Foundation.ps1
+3. Add your App Gateway/APIM certificate to the new Key Vault resource.  Ensure the certificate name in 02-main parameter file matches the name you use when you import to Key Vault.
+4. Run Deploy-Main.ps1
+
+### Example Usage
+```powershell
+.\Deploy-Foundation.ps1 -ResourceGroupName "myResourceGroup" -EnvironmentName "dev"
+
+.\Deploy-Main.ps1 -ResourceGroupName "myResourceGroup" -EnvironmentName "dev"
+```
+
+In this example, `myResourceGroup` is the name of the resource group where you want to deploy the resources, and `dev` is the name of the environment.
