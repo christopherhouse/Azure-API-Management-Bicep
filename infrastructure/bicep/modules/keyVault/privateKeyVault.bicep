@@ -57,3 +57,6 @@ module kvPe '../privateEndpoint/privateEndpoint.bicep' = {
     targetResourceId: kv.outputs.id
   }
 }
+
+output id string = kv.outputs.id
+output name string = kv.outputs.name

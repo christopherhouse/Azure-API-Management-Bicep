@@ -141,7 +141,7 @@ module ai './modules/observability/applicationInsights.bicep' = {
     location: location
     appInsightsName: appInsightsName
     buildId: deploymentId
-    keyVaultName: keyVaultName
+    keyVaultName: kv.outputs.name
     logAnalyticsWorkspaceId: laws.outputs.id
   }
 }

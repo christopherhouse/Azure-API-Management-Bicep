@@ -1,6 +1,6 @@
 using '../01-foundation.bicep'
 param workloadName = 'cmhapim'
-param environmentSuffix = 'local'
+param environmentSuffix = 'loc'
 param location = 'eastus2'
 param addressPrefixes = ['10.1.0.0/24']
 param subnetConfigurations = {
