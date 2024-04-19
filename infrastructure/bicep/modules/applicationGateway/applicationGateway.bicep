@@ -18,10 +18,10 @@ param maxInstances int
 param keyVaultName string
 
 @description('The hostname of the backend web app that application gateway will expose')
-param webAppBackendHostName string
+param apimBackendHostName string
 
 @description('The name of the secret in the key vault that contains the SSL certificate')
-param webAppSslCertKeyVaultSecretName string
+param apimSslCertKeyVaultSecretName string
 
 @description('The name of the virtual network where the application gateway will be deployed')
 param vnetName string
@@ -37,7 +37,7 @@ param enableZoneRedundancy bool = false
 
 var zones = enableZoneRedundancy ? ['1', '2', '3'] : []
 
-var keyVaultSecretId = 'https://${keyVaultName}${environment().suffixes.keyvaultDns}/secrets/${webAppSslCertKeyVaultSecretName}'
+var keyVaultSecretId = 'https://${keyVaultName}${environment().suffixes.keyvaultDns}/secrets/${apimSslCertKeyVaultSecretName}'
 var publicIpName = '${appGatewayName}-pip'
 
 var uamiName = '${appGatewayName}-uami'
@@ -94,7 +94,14 @@ resource appGwPip 'Microsoft.Network/publicIPAddresses@2023-09-01' = {
 }
 
 var appGatewayIpConfigName = 'appGatewayIpConfig'
-var sslCertNmae = 'www'
+var sslCertNmae = 'api-management'
+var frontEndConfigName = 'appGwPublicFrontendIpIPv4'
+var apimProbeName = 'apimProbe'
+var frontEndPortName = 'port_443'
+var backendPoolName = 'apimBackendPool'
+var backendHttpSettingsName = 'apimBackendSettings'
+var httpListenerName = 'publicHttps'
+var apimRoutingRuleName = 'apimRule'
 
 resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
   name: appGatewayName
@@ -136,8 +143,8 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     sslProfiles: []
     frontendIPConfigurations: [
       {
-        name: 'appGwPublicFrontendIpIPv4'
-        id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, 'appGwPublicFrontendIpIPv4')
+        name: frontEndConfigName
+        id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, frontEndConfigName)
         properties: {
           privateIPAllocationMethod: 'Dynamic'
           publicIPAddress: {
@@ -148,8 +155,8 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     ]
     frontendPorts: [
       {
-        name: 'port_443'
-        id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', appGatewayName, 'port_443')
+        name: frontEndPortName
+        id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', appGatewayName, frontEndPortName)
         properties: {
           port: 443
         }
@@ -157,12 +164,12 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     ]
     backendAddressPools: [
       {
-        name: 'webAppBackendPool'
-        id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', appGatewayName, 'webAppBackendPool')
+        name: backendPoolName
+        id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', appGatewayName, backendPoolName)
         properties: {
           backendAddresses: [
             {
-              fqdn: webAppBackendHostName
+              fqdn: apimBackendHostName
             }
           ]
         }
@@ -171,17 +178,17 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     loadDistributionPolicies: []
     backendHttpSettingsCollection: [
       {
-        name: 'backendHttpsSettings'
-        id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', appGatewayName, 'backendHttpsSettings')
+        name: backendHttpSettingsName
+        id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', appGatewayName, backendHttpSettingsName)
         properties: {
           port: 443
           protocol: 'Https'
           cookieBasedAffinity: 'Disabled'
           pickHostNameFromBackendAddress: false
-          hostName: webAppBackendHostName
+          hostName: apimBackendHostName
           requestTimeout: 20
           probe: {
-            id: resourceId('Microsoft.Network/applicationGateways/probes', appGatewayName, 'backendHttpsSettings22ef1a7b-18f6-4680-8469-dc2c9e0a009_')
+            id: resourceId('Microsoft.Network/applicationGateways/probes', appGatewayName, apimProbeName)
           }
         }
       }
@@ -189,14 +196,14 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     backendSettingsCollection: []
     httpListeners: [
       {
-        name: 'publicHttps'
-        id: resourceId('Microsoft.Network/applicationGateways/httpListeners', appGatewayName, 'publicHttps')
+        name: httpListenerName
+        id: resourceId('Microsoft.Network/applicationGateways/httpListeners', appGatewayName, httpListenerName)
         properties: {
           frontendIPConfiguration: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, 'appGwPublicFrontendIpIPv4')
+            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, frontEndConfigName)
           }
           frontendPort: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', appGatewayName, 'port_443')
+            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', appGatewayName, frontEndPortName)
           }
           protocol: 'Https'
           sslCertificate: {
@@ -212,19 +219,19 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     urlPathMaps: []
     requestRoutingRules: [
       {
-        name: 'webAppRule'
-        id: resourceId('Microsoft.Network/applicationGateways/requestRoutingRules', appGatewayName, 'webAppRule')
+        name: apimRoutingRuleName
+        id: resourceId('Microsoft.Network/applicationGateways/requestRoutingRules', appGatewayName, apimRoutingRuleName)
         properties: {
           ruleType: 'Basic'
           priority: 1
           httpListener: {
-            id: resourceId('Microsoft.Network/applicationGateways/httpListeners', appGatewayName, 'publicHttps')
+            id: resourceId('Microsoft.Network/applicationGateways/httpListeners', appGatewayName, httpListenerName)
           }
           backendAddressPool: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', appGatewayName, 'webAppBackendPool')
+            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', appGatewayName, backendPoolName)
           }
           backendHttpSettings: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', appGatewayName, 'backendHttpsSettings')
+            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', appGatewayName, backendHttpSettingsName)
           }
         }
       }
@@ -232,8 +239,8 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     routingRules: []
     probes: [
       {
-        name: 'backendHttpsSettings22ef1a7b-18f6-4680-8469-dc2c9e0a009_'
-        id: resourceId('Microsoft.Network/applicationGateways/probes', appGatewayName, 'backendHttpsSettings22ef1a7b-18f6-4680-8469-dc2c9e0a009_')
+        name: apimProbeName
+        id: resourceId('Microsoft.Network/applicationGateways/probes', appGatewayName, apimProbeName)
         properties: {
           protocol: 'Https'
           path: '/status-0123456789abcdef'
@@ -272,6 +279,24 @@ resource diags 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
       }
       {
         category: 'ApplicationGatewayFirewallLog'
+        enabled: true
+      }
+    ]
+    workspaceId: logAnalyticsWorkspaceId
+  }
+}
+
+resource pipDiags 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'pipDiags'
+  scope: appGwPip
+  properties: {
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+      {
+        categoryGroup: 'audit'
         enabled: true
       }
     ]

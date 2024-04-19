@@ -87,7 +87,7 @@ module kv './modules/keyVault/privateKeyVault.bicep' = {
   }
 }
 
-module laws './modules/observability/logAnalyticsWorkspace.bicep' = {
+module laws './modules/logAnalytics/logAnalyticsWorkspace.bicep' = {
   name: logAnalyticsWorkspaceDeploymentName
   params: {
     location: location
@@ -96,7 +96,7 @@ module laws './modules/observability/logAnalyticsWorkspace.bicep' = {
   }
 }
 
-module ai './modules/observability/applicationInsights.bicep' = {
+module ai './modules/applicationInsights/applicationInsights.bicep' = {
   name: appInsightsDeploymentName
   params: {
     location: location
