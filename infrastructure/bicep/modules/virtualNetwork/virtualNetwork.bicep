@@ -2,6 +2,8 @@ param virtualNetworkName string
 param location string
 param addressPrefixes array // Array of strings, ie ['10.0.0.0/24', '192.168.0.1']
 param subnetConfiguration subnetConfigurationsType
+param apimNsgResourceId string
+param appGwNsgResourceId string
 
 @export()
 type subnetConfigurationType = {
@@ -81,6 +83,9 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
               }
             }
           ]
+          networkSecurityGroup: {
+            id: apimNsgResourceId
+          }
         }
       }
       {
@@ -95,6 +100,9 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
               }
             }
           ]
+          networkSecurityGroup: {
+            id: appGwNsgResourceId
+          }
         }
       }
     ]

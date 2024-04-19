@@ -26,12 +26,11 @@ type subnetConfigurationsType = {
 var vnetName = '${workloadName}-${environmentSuffix}-vnet'
 var vnetDeploymentName = '${vnetName}-${deploymentId}'
 
-// subnets
-var appServiceOutboundSubnetDeploymentName = '${vnetName}-${subnetConfigurations.appServiceOutboundSubnet.name}-${deploymentId}'
-var appServiceInboundSubnetDeploymentName = '${vnetName}-${subnetConfigurations.appServiceInboundSubnet.name}-${deploymentId}'
-var keyVaultSubnetDeploymentName = '${vnetName}-${subnetConfigurations.keyVaultSubnet.name}-${deploymentId}'
-var apimSubnetDeploymentName = '${vnetName}-${subnetConfigurations.apimSubnet.name}-${deploymentId}'
-var appGwSubnetDeploymentName = '${vnetName}-${subnetConfigurations.appGwSubnet.name}-${deploymentId}'
+// NSGs
+var apimNsgName = '${workloadName}-${environmentSuffix}-apim-nsg'
+var appGwNsgName = '${workloadName}-${environmentSuffix}-appgw-nsg'
+var apimNsgDeploymentName = '${apimNsgName}-${deploymentId}'
+var appGwNsgDeploymentName = '${appGwNsgName}-${deploymentId}'
 
 // Key Vault
 var keyVaultName = '${workloadName}-${environmentSuffix}-kv'
@@ -45,6 +44,25 @@ var logAnalyticsWorkspaceDeploymentName = '${logAnalyticsWorkspaceName}-${deploy
 var appInsightsName = '${workloadName}-${environmentSuffix}-ai'
 var appInsightsDeploymentName = '${appInsightsName}-${deploymentId}'
 
+module apimNsg './modules/networkSecurityGroup/apimNetworkSecurityGroup.bicep' = {
+  name: apimNsgDeploymentName
+  params: {
+    location: location
+    logAnalyticsWorkspaceResourceId: laws.outputs.id
+    nsgName: apimNsgName
+  }
+}
+
+module appGwNsg './modules/networkSecurityGroup/applicationGatewayNetworkSecurityGroup.bicep' = {
+  name: appGwNsgDeploymentName
+  params: {
+    location: location
+    appGatewaySubnetAddressSpace: subnetConfigurations.appGwSubnet.addressPrefix
+    logAnalyticsWorkspaceResourceId: laws.outputs.id
+    networkSecurityGroupName: appGwNsgName
+  }
+}
+
 module vnet './modules/virtualNetwork/virtualNetwork.bicep' = {
   name: vnetDeploymentName
   params: {
@@ -52,6 +70,8 @@ module vnet './modules/virtualNetwork/virtualNetwork.bicep' = {
     addressPrefixes: addressPrefixes
     virtualNetworkName: vnetName
     subnetConfiguration: subnetConfigurations
+    apimNsgResourceId: apimNsg.outputs.id
+    appGwNsgResourceId: appGwNsg.outputs.id
   }
 }
 
