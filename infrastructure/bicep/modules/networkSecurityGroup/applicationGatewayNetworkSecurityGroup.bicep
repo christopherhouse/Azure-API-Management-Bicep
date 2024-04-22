@@ -51,6 +51,38 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2023-09-01' = {
           destinationAddressPrefixes: []
         }
       }
+      {
+        name: 'Allow_Azure_Load_Balancer_Any_Any'
+        type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+        properties: {
+          protocol: 'TCP'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: 'AzureLoadBalancer'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 300
+          direction: 'Inbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }      
+      {
+        name: 'DenyVNetInbound'
+        properties: {
+          priority: 4096
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+          access: 'Deny'
+          direction: 'Inbound'
+          description: 'Deny all inbound'
+        }
+      }      
     ]
   }
 }

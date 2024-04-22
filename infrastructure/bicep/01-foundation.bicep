@@ -29,8 +29,10 @@ var vnetDeploymentName = '${vnetName}-${deploymentId}'
 // NSGs
 var apimNsgName = '${workloadName}-${environmentSuffix}-apim-nsg'
 var appGwNsgName = '${workloadName}-${environmentSuffix}-appgw-nsg'
+var keyVaultNsgName = '${workloadName}-${environmentSuffix}-kv-nsg'
 var apimNsgDeploymentName = '${apimNsgName}-${deploymentId}'
 var appGwNsgDeploymentName = '${appGwNsgName}-${deploymentId}'
+var keyVaultNsgDeploymentName = '${keyVaultNsgName}-${deploymentId}'
 
 // Key Vault
 var keyVaultName = '${workloadName}-${environmentSuffix}-kv'
@@ -50,6 +52,8 @@ module apimNsg './modules/networkSecurityGroup/apimNetworkSecurityGroup.bicep' =
     location: location
     logAnalyticsWorkspaceResourceId: laws.outputs.id
     nsgName: apimNsgName
+    apimSubnetRange: subnetConfigurations.apimSubnet.addressPrefix
+    appGatewaySubnetRange: subnetConfigurations.appGwSubnet.addressPrefix
   }
 }
 
@@ -63,6 +67,18 @@ module appGwNsg './modules/networkSecurityGroup/applicationGatewayNetworkSecurit
   }
 }
 
+module kvNsg './modules/networkSecurityGroup/keyVaultNetworkSecurityGroup.bicep' = {
+  name: keyVaultNsgDeploymentName
+  params: {
+    location: location
+    apimSubnetRange: subnetConfigurations.apimSubnet.addressPrefix
+    appGatewaySubnetRange: subnetConfigurations.appGwSubnet.addressPrefix
+    keyVaultSubnetRange: subnetConfigurations.keyVaultSubnet.addressPrefix
+    logAnalyticsWorkspaceId: laws.outputs.id
+    networkSecurityGroupName: keyVaultNsgName
+  }
+}
+
 module vnet './modules/virtualNetwork/virtualNetwork.bicep' = {
   name: vnetDeploymentName
   params: {
@@ -72,6 +88,7 @@ module vnet './modules/virtualNetwork/virtualNetwork.bicep' = {
     subnetConfiguration: subnetConfigurations
     apimNsgResourceId: apimNsg.outputs.id
     appGwNsgResourceId: appGwNsg.outputs.id
+    keyVaultNsgResourceId: kvNsg.outputs.id
   }
 }
 

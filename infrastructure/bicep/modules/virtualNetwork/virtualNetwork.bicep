@@ -4,6 +4,7 @@ param addressPrefixes array // Array of strings, ie ['10.0.0.0/24', '192.168.0.1
 param subnetConfiguration subnetConfigurationsType
 param apimNsgResourceId string
 param appGwNsgResourceId string
+param keyVaultNsgResourceId string
 
 @export()
 type subnetConfigurationType = {
@@ -66,9 +67,13 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
               name: subnetConfiguration.keyVaultSubnet.delegation
               properties: {
                 serviceName: subnetConfiguration.keyVaultSubnet.delegation
+  
               }
             }
           ]
+          networkSecurityGroup: {
+            id: keyVaultNsgResourceId
+          }
         }
       }
       {
