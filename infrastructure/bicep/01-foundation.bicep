@@ -52,6 +52,8 @@ module apimNsg './modules/networkSecurityGroup/apimNetworkSecurityGroup.bicep' =
     location: location
     logAnalyticsWorkspaceResourceId: laws.outputs.id
     nsgName: apimNsgName
+    apimSubnetRange: subnetConfigurations.apimSubnet.addressPrefix
+    appGatewaySubnetRange: subnetConfigurations.appGwSubnet.addressPrefix
   }
 }
 
