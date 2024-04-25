@@ -94,6 +94,7 @@ module vnet './modules/virtualNetwork/virtualNetwork.bicep' = {
     apimNsgResourceId: apimNsg.outputs.id
     appGwNsgResourceId: appGwNsg.outputs.id
     keyVaultNsgResourceId: kvNsg.outputs.id
+    tags: tags
   }
 }
 
