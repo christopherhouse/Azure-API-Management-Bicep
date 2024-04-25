@@ -20,6 +20,7 @@ param appGatewaySkuName string
 param appGatewayTslCertSecretName string
 param appGatewayHostName string
 param appGatewayPrivateIp string
+param apiCenterWorkspaceName string
 param deploymentId string = substring(newGuid(), 0, 8)
 
 // APIM
@@ -38,6 +39,10 @@ var apimUamiDeploymentName = '${apimUamiName}-${deploymentId}'
 // App Gatway
 var appGwName = '${workloadName}-${environmentSuffix}-appgw'
 var appGwDeploymentName = '${appGwName}-${deploymentId}'
+
+// API Center
+var apiCenterName = '${workloadName}-${environmentSuffix}-apic'
+var apiCenterDeploymentName = '${apiCenterName}-${deploymentId}'
 
 resource vnet 'Microsoft.Network/virtualNetworks@2023-09-01' existing = {
   name: vnetName
@@ -108,5 +113,14 @@ module appGw './modules/applicationGateway/applicationGateway.bicep' = {
     apimSslCertKeyVaultSecretName: appGatewayTslCertSecretName
     appGatewayHostName: appGatewayHostName
     appGatewayPrivateIp: appGatewayPrivateIp
+  }
+}
+
+module apiCenter './modules/apiCenter/apiCenter.bicep' = {
+  name: apiCenterDeploymentName
+  params: {
+    location: location
+    apiCenterName: apiCenterName
+    apiCenterWorkspaceName: apiCenterWorkspaceName
   }
 }
