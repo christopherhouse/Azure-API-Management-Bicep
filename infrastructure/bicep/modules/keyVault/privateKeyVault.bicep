@@ -60,6 +60,7 @@ module kvPe '../privateEndpoint/privateEndpoint.bicep' = {
     privateEndpointName: kvPeName
     subnetId: servicesSubnetResourceId
     targetResourceId: kv.outputs.id
+    tags: tags
   }
 }
 

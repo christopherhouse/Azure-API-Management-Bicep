@@ -75,6 +75,7 @@ module apimPip './modules/publicIpAddress/publicIpAddress.bicep' = {
     location: location
     publicIpAddressName: apimPipName
     logAnalyticsWorkspaceId: laws.id
+    tags: tags
   }
 }
 

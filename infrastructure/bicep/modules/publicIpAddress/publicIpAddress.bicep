@@ -13,10 +13,14 @@ param zoneRedundant bool = false
 @description('The ID of the Log Analytics workspace to send diagnostics data to')
 param logAnalyticsWorkspaceId string
 
+@description('The tags to associate with the API Center resource')
+param tags object = {}
+
 var zones = zoneRedundant ? ['1', '2', '3'] : []
 
 resource pip 'Microsoft.Network/publicIPAddresses@2019-11-01' = {
   name: publicIpAddressName
+  tags: tags
   location: location
   sku: {
     name: 'Standard'
