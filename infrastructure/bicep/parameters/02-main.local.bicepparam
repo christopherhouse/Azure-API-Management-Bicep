@@ -19,3 +19,8 @@ param appGwSubnetName = 'app-gateway'
 param appGatewayHostName = 'api.chrishou.se'
 param appGatewayPrivateIp = '10.1.0.50'
 param apiCenterWorkspaceName = 'Default'
+param tags = {
+  CostCenter: '12345'
+  Project: 'cmhapim'
+  Owner: 'Chris House'
+}
