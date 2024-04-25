@@ -48,6 +48,9 @@ param hostNameConfigurations hostNameConfigurationsType = []
 @description('A flag indicating whether the APIM instance should be zone redundant')
 param zoneRedundant bool = false
 
+@description('The tags to associate with the API Center resource')
+param tags object = {}
+
 @description('The unique identifier for the deployment')
 param deploymentId string
 
@@ -105,6 +108,7 @@ resource kvRoleAssignmentSMI 'Microsoft.Authorization/roleAssignments@2022-04-01
 
 resource apiManagementService 'Microsoft.ApiManagement/service@2023-03-01-preview' = {
   name: apiManagementServiceName
+  tags: tags
   location: location
   identity: {
     type: 'SystemAssigned, UserAssigned'
@@ -155,6 +159,7 @@ module dns '../dns/privateDnsZone.bicep' = {
   params: {
     vnetResourceId: vnetResourceId
     zoneName: 'azure-api.net'
+    tags: tags
   }
 }
 

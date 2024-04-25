@@ -4,9 +4,13 @@ param managedIdentityName string
 @description('The Azure region where the user assigned managed identity should be created')
 param location string
 
+@description('The tags to associate with the API Center resource')
+param tags object = {}
+
 resource uami 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: managedIdentityName
   location: location
+  tags: tags
 }
 
 output id string = uami.id

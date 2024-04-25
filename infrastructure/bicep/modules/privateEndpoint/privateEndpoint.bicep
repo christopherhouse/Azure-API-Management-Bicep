@@ -16,11 +16,15 @@ param groupId string
 @description('The resource ID of the private DNS zone for this resource')
 param dnsZoneId string
 
+@description('The tags to associate with the API Center resource')
+param tags object = {}
+
 var nicName = '${privateEndpointName}-nic'
 
 resource pe 'Microsoft.Network/privateEndpoints@2023-06-01' = {
   name: privateEndpointName
   location: location
+  tags: tags
   properties: {
     customNetworkInterfaceName: nicName
     subnet: {

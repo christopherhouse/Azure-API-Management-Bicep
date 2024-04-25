@@ -1,12 +1,27 @@
+@description('The name of the network security group to create')
 param networkSecurityGroupName string
+
+@description('The Azure region where the network security group should be created')
 param location string
+
+@description('The ID of the Log Analytics workspace to send diagnostic logs to')
 param logAnalyticsWorkspaceId string
+
+@description('The subnet range for the API Management subnet')
 param apimSubnetRange string
+
+@description('The subnet range for the Application Gateway subnet')
 param appGatewaySubnetRange string
+
+@description('The subnet range for the Key Vault subnet')
 param keyVaultSubnetRange string
+
+@description('The tags to associate with the API Center resource')
+param tags object = {}
 
 resource nsg 'Microsoft.Network/networkSecurityGroups@2023-09-01' = {
   name: networkSecurityGroupName
+  tags: tags
   location: location
   properties: {
     securityRules: [

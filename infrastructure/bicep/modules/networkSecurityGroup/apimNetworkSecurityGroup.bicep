@@ -13,8 +13,12 @@ param apimSubnetRange string
 @description('The address space for the application gateway, used to allow http/https to apim')
 param appGatewaySubnetRange string
 
+@description('The tags to associate with the API Center resource')
+param tags object = {}
+
 resource nsg 'Microsoft.Network/networkSecurityGroups@2023-06-01' = {
   name: nsgName
+  tags: tags
   location: location
   properties: {
     securityRules: [

@@ -5,6 +5,8 @@ param addressPrefixes array
 param subnetConfigurations subnetConfigurationsType
 param logAnalyticsRetentionDays int
 param deploymentId string = substring(newGuid(), 0, 8)
+@description('The tags to associate with the API Center resource')
+param tags object = {}
 
 @export()
 type subnetConfigurationType = {
@@ -54,6 +56,7 @@ module apimNsg './modules/networkSecurityGroup/apimNetworkSecurityGroup.bicep' =
     nsgName: apimNsgName
     apimSubnetRange: subnetConfigurations.apimSubnet.addressPrefix
     appGatewaySubnetRange: subnetConfigurations.appGwSubnet.addressPrefix
+    tags: tags
   }
 }
 
@@ -64,6 +67,7 @@ module appGwNsg './modules/networkSecurityGroup/applicationGatewayNetworkSecurit
     appGatewaySubnetAddressSpace: subnetConfigurations.appGwSubnet.addressPrefix
     logAnalyticsWorkspaceResourceId: laws.outputs.id
     networkSecurityGroupName: appGwNsgName
+    tags: tags
   }
 }
 
@@ -76,6 +80,7 @@ module kvNsg './modules/networkSecurityGroup/keyVaultNetworkSecurityGroup.bicep'
     keyVaultSubnetRange: subnetConfigurations.keyVaultSubnet.addressPrefix
     logAnalyticsWorkspaceId: laws.outputs.id
     networkSecurityGroupName: keyVaultNsgName
+    tags: tags
   }
 }
 
@@ -89,6 +94,7 @@ module vnet './modules/virtualNetwork/virtualNetwork.bicep' = {
     apimNsgResourceId: apimNsg.outputs.id
     appGwNsgResourceId: appGwNsg.outputs.id
     keyVaultNsgResourceId: kvNsg.outputs.id
+    tags: tags
   }
 }
 
@@ -101,6 +107,7 @@ module kv './modules/keyVault/privateKeyVault.bicep' = {
     logAnalyticsWorkspaceResourceId: laws.outputs.id 
     servicesSubnetResourceId: vnet.outputs.kvSubnetId
     vnetName: vnet.outputs.name
+    tags: tags
   }
 }
 
@@ -110,6 +117,7 @@ module laws './modules/logAnalytics/logAnalyticsWorkspace.bicep' = {
     location: location
     logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
     retentionInDays: logAnalyticsRetentionDays
+    tags: tags
   }
 }
 
@@ -121,5 +129,6 @@ module ai './modules/applicationInsights/applicationInsights.bicep' = {
     buildId: deploymentId
     keyVaultName: kv.outputs.name
     logAnalyticsWorkspaceId: laws.outputs.id
+    tags: tags
   }
 }

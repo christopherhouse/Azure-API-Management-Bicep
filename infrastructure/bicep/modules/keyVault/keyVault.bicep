@@ -7,8 +7,12 @@ param location string
 @description('The resource id of the log analytics workspace to send logs to')
 param logAnalyticsWorkspaceResourceId string
 
+@description('The tags to associate with the API Center resource')
+param tags object = {}
+
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
+  tags: tags
   location: location
   properties: {
     sku: {
@@ -19,6 +23,8 @@ resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
     softDeleteRetentionInDays: 90
     enableRbacAuthorization: true
     publicNetworkAccess: 'Disabled'
+    enableSoftDelete: true
+    enablePurgeProtection: true
     networkAcls: {
       bypass: 'AzureServices'
       defaultAction: 'Deny'

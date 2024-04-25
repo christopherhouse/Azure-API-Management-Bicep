@@ -45,6 +45,9 @@ param logAnalyticsWorkspaceId string
 @description('Whether to enable zone redundancy for the application gateway')
 param enableZoneRedundancy bool = false
 
+@description('The tags to associate with the API Center resource')
+param tags object = {}
+
 var zones = enableZoneRedundancy ? ['1', '2', '3'] : []
 
 var keyVaultSecretId = 'https://${keyVaultName}${environment().suffixes.keyvaultDns}/secrets/${apimSslCertKeyVaultSecretName}'
@@ -66,6 +69,7 @@ resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
 resource uami 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
   name: uamiName
   location: location
+  tags: tags
 }
 
 resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -90,6 +94,7 @@ resource appGwSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' exis
 
 resource appGwPip 'Microsoft.Network/publicIPAddresses@2023-09-01' = {
   name:publicIpName
+  tags: tags
   location: location
   sku: {
     name: 'Standard'

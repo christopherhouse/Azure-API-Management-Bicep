@@ -21,6 +21,7 @@ param appGatewayTslCertSecretName string
 param appGatewayHostName string
 param appGatewayPrivateIp string
 param apiCenterWorkspaceName string
+param tags object = {}
 param deploymentId string = substring(newGuid(), 0, 8)
 
 // APIM
@@ -63,7 +64,8 @@ module apimUami './modules/managedIdentity/userAssignedManagedIdentity.bicep' = 
   name: apimUamiDeploymentName
   params: {
     location: location
-    managedIdentityName: apimUamiName 
+    managedIdentityName: apimUamiName
+    tags: tags
   }
 }
 
@@ -73,6 +75,7 @@ module apimPip './modules/publicIpAddress/publicIpAddress.bicep' = {
     location: location
     publicIpAddressName: apimPipName
     logAnalyticsWorkspaceId: laws.id
+    tags: tags
   }
 }
 
@@ -94,6 +97,7 @@ module apim './modules/apiManagement/apiManagementService.bicep' = {
     vnetIntegrationMode: apimVnetIntegrationMode
     vnetResourceId: vnet.id
     vnetSubnetResourceId: apimSubnet.id
+    tags: tags
   }
 }
 
@@ -113,6 +117,7 @@ module appGw './modules/applicationGateway/applicationGateway.bicep' = {
     apimSslCertKeyVaultSecretName: appGatewayTslCertSecretName
     appGatewayHostName: appGatewayHostName
     appGatewayPrivateIp: appGatewayPrivateIp
+    tags: tags
   }
 }
 
@@ -122,5 +127,6 @@ module apiCenter './modules/apiCenter/apiCenter.bicep' = {
     location: location
     apiCenterName: apiCenterName
     apiCenterWorkspaceName: apiCenterWorkspaceName
+    tags: tags
   }
 }
