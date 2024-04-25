@@ -113,6 +113,7 @@ module laws './modules/logAnalytics/logAnalyticsWorkspace.bicep' = {
     location: location
     logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
     retentionInDays: logAnalyticsRetentionDays
+    tags: tags
   }
 }
 
