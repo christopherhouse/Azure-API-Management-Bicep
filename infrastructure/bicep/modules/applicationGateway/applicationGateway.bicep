@@ -29,6 +29,10 @@ param vnetName string
 @description('The name of the subnet where the application gateway will be deployed')
 param appGatewaySubnetName string
 
+@description('The type of endpoint to create')
+@allowed(['Internal', 'External'])
+param httpListenerType string = 'Internal'
+
 @description('The name of the web app that the application gateway will expose')
 param logAnalyticsWorkspaceId string
 
@@ -102,6 +106,29 @@ var backendPoolName = 'apimBackendPool'
 var backendHttpSettingsName = 'apimBackendSettings'
 var httpListenerName = 'publicHttps'
 var apimRoutingRuleName = 'apimRule'
+var privateFrontEndIpConfigurationName = 'apimPrivateFrontEndIpv4'
+
+var privateFrontEndIpConfiguration = {
+  name: privateFrontEndIpConfigurationName
+  id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, privateFrontEndIpConfigurationName)
+  properties: {
+    privateIPAllocationMethod: 'Dynamic'
+    subnet: {
+      id: appGwSubnet.id
+    }
+  }
+}
+
+var publicFrontEndIpConfiguration = {
+  name: frontEndConfigName
+  id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, frontEndConfigName)
+  properties: {
+    privateIPAllocationMethod: 'Dynamic'
+    publicIPAddress: {
+      id: appGwPip.id
+    }
+  }
+}
 
 var wafConfig = {
   enabled: true
@@ -153,18 +180,7 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     trustedRootCertificates: []
     trustedClientCertificates: []
     sslProfiles: []
-    frontendIPConfigurations: [
-      {
-        name: frontEndConfigName
-        id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, frontEndConfigName)
-        properties: {
-          privateIPAllocationMethod: 'Dynamic'
-          publicIPAddress: {
-            id: appGwPip.id
-          }
-        }
-      }
-    ]
+    frontendIPConfigurations: httpListenerType == 'Internal' ? union(publicFrontEndIpConfiguration, privateFrontEndIpConfiguration) : [publicFrontEndIpConfiguration]
     frontendPorts: [
       {
         name: frontEndPortName
