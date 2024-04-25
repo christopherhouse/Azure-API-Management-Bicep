@@ -5,6 +5,8 @@ param addressPrefixes array
 param subnetConfigurations subnetConfigurationsType
 param logAnalyticsRetentionDays int
 param deploymentId string = substring(newGuid(), 0, 8)
+@description('The tags to associate with the API Center resource')
+param tags object = {}
 
 @export()
 type subnetConfigurationType = {
@@ -101,6 +103,7 @@ module kv './modules/keyVault/privateKeyVault.bicep' = {
     logAnalyticsWorkspaceResourceId: laws.outputs.id 
     servicesSubnetResourceId: vnet.outputs.kvSubnetId
     vnetName: vnet.outputs.name
+    tags: tags
   }
 }
 
@@ -121,5 +124,6 @@ module ai './modules/applicationInsights/applicationInsights.bicep' = {
     buildId: deploymentId
     keyVaultName: kv.outputs.name
     logAnalyticsWorkspaceId: laws.outputs.id
+    tags: tags
   }
 }

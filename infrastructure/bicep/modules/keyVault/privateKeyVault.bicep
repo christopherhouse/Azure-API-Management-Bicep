@@ -16,6 +16,9 @@ param servicesSubnetResourceId string
 @description('Deployment identifier, used to ensure uniqueness of deployment names')
 param deploymentId string
 
+@description('The tags to associate with the API Center resource')
+param tags object = {}
+
 var kvDeploymentName = '${keyVaultName}-private-kv-${deploymentId}'
 
 var kvDnsZoneName = 'privatelink.vaultcore.azure.net'
@@ -35,6 +38,7 @@ module kv './keyVault.bicep' = {
     location: location
     keyVaultName: keyVaultName
     logAnalyticsWorkspaceResourceId: logAnalyticsWorkspaceResourceId
+    tags: tags
   }
 }
 
@@ -43,6 +47,7 @@ module kvDns '../dns/privateDnsZone.bicep' = {
   params: {
     vnetResourceId: vnet.id
     zoneName: kvDnsZoneName
+    tags: tags
   }
 }
 

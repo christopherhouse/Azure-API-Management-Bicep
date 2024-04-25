@@ -159,6 +159,7 @@ module dns '../dns/privateDnsZone.bicep' = {
   params: {
     vnetResourceId: vnetResourceId
     zoneName: 'azure-api.net'
+    tags: tags
   }
 }
 
