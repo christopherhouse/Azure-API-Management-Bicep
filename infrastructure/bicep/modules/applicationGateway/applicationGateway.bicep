@@ -33,6 +33,12 @@ param appGatewaySubnetName string
 @allowed(['Internal', 'External'])
 param httpListenerType string = 'Internal'
 
+@description('The host name to use on the app gateway httpListener')
+param appGatewayHostName string
+
+@description('The private IP address to use on the app gateway httpListener')
+param appGatewayPrivateIp string
+
 @description('The name of the web app that the application gateway will expose')
 param logAnalyticsWorkspaceId string
 
@@ -99,12 +105,12 @@ resource appGwPip 'Microsoft.Network/publicIPAddresses@2023-09-01' = {
 
 var appGatewayIpConfigName = 'appGatewayIpConfig'
 var sslCertNmae = 'api-management'
-var frontEndConfigName = 'appGwPublicFrontendIpIPv4'
+var publicFrontEndConfigName = 'appGwPublicFrontendIpIPv4'
 var apimProbeName = 'apimProbe'
 var frontEndPortName = 'port_443'
 var backendPoolName = 'apimBackendPool'
 var backendHttpSettingsName = 'apimBackendSettings'
-var httpListenerName = 'publicHttps'
+var httpListenerName = 'Https'
 var apimRoutingRuleName = 'apimRule'
 var privateFrontEndIpConfigurationName = 'apimPrivateFrontEndIpv4'
 
@@ -112,7 +118,8 @@ var privateFrontEndIpConfiguration = {
   name: privateFrontEndIpConfigurationName
   id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, privateFrontEndIpConfigurationName)
   properties: {
-    privateIPAllocationMethod: 'Dynamic'
+    privateIPAllocationMethod: 'Static'
+    privateIPAddress: appGatewayPrivateIp
     subnet: {
       id: appGwSubnet.id
     }
@@ -120,15 +127,58 @@ var privateFrontEndIpConfiguration = {
 }
 
 var publicFrontEndIpConfiguration = {
-  name: frontEndConfigName
-  id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, frontEndConfigName)
+  name: publicFrontEndConfigName
+  id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, publicFrontEndConfigName)
   properties: {
-    privateIPAllocationMethod: 'Dynamic'
+    //privateIPAllocationMethod: 'Dynamic'
     publicIPAddress: {
       id: appGwPip.id
     }
   }
 }
+
+var frontEnds = httpListenerType == 'Internal' ? [privateFrontEndIpConfiguration, publicFrontEndIpConfiguration] : [publicFrontEndIpConfiguration]
+
+// TODO: Consider extending this to support both internal and public listeners
+var publicListener = {
+  name: httpListenerName
+  id: resourceId('Microsoft.Network/applicationGateways/httpListeners', appGatewayName, httpListenerName)
+  properties: {
+    hostName: appGatewayHostName
+    frontendIPConfiguration: {
+      id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, publicFrontEndConfigName)
+    }
+    frontendPort: {
+      id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', appGatewayName, frontEndPortName)
+    }
+    protocol: 'Https'
+    sslCertificate: {
+      id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', appGatewayName, sslCertNmae)
+    }
+    requireServerNameIndication: false
+  }
+}
+
+var privateListener = {
+  name: httpListenerName
+  id: resourceId('Microsoft.Network/applicationGateways/httpListeners', appGatewayName, httpListenerName)
+  properties: {
+    hostName: appGatewayHostName
+    frontendIPConfiguration: {
+      id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, privateFrontEndIpConfigurationName)
+    }
+    frontendPort: {
+      id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', appGatewayName, frontEndPortName)
+    }
+    protocol: 'Https'
+    sslCertificate: {
+      id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', appGatewayName, sslCertNmae)
+    }
+    requireServerNameIndication: false
+  }
+}
+
+var listeners = httpListenerType == 'Internal' ? [privateListener] : [publicListener]
 
 var wafConfig = {
   enabled: true
@@ -180,7 +230,7 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
     trustedRootCertificates: []
     trustedClientCertificates: []
     sslProfiles: []
-    frontendIPConfigurations: httpListenerType == 'Internal' ? union(publicFrontEndIpConfiguration, privateFrontEndIpConfiguration) : [publicFrontEndIpConfiguration]
+    frontendIPConfigurations: frontEnds
     frontendPorts: [
       {
         name: frontEndPortName
@@ -222,27 +272,7 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
       }
     ]
     backendSettingsCollection: []
-    httpListeners: [
-      {
-        name: httpListenerName
-        id: resourceId('Microsoft.Network/applicationGateways/httpListeners', appGatewayName, httpListenerName)
-        properties: {
-          frontendIPConfiguration: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appGatewayName, frontEndConfigName)
-          }
-          frontendPort: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', appGatewayName, frontEndPortName)
-          }
-          protocol: 'Https'
-          sslCertificate: {
-            id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', appGatewayName, sslCertNmae)
-          }
-          hostNames: []
-          requireServerNameIndication: false
-          customErrorConfigurations: []
-        }
-      }
-    ]
+    httpListeners: listeners
     listeners: []
     urlPathMaps: []
     requestRoutingRules: [

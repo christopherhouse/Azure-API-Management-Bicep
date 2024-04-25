@@ -16,3 +16,5 @@ param appGatewayMaxInstances = 10
 param appGatewaySkuName = 'Standard_v2'
 param appGatewayTslCertSecretName = 'api-chrishou-se'
 param appGwSubnetName = 'app-gateway'
+param appGatewayHostName = 'api.chrishou.se'
+param appGatewayPrivateIp = '10.1.0.50'

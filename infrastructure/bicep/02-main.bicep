@@ -18,6 +18,8 @@ param appGatewayMaxInstances int
 @allowed(['WAF_v2', 'Standard_v2'])
 param appGatewaySkuName string
 param appGatewayTslCertSecretName string
+param appGatewayHostName string
+param appGatewayPrivateIp string
 param deploymentId string = substring(newGuid(), 0, 8)
 
 // APIM
@@ -104,5 +106,7 @@ module appGw './modules/applicationGateway/applicationGateway.bicep' = {
     vnetName: vnetName
     apimBackendHostName: apim.outputs.hostName
     apimSslCertKeyVaultSecretName: appGatewayTslCertSecretName
+    appGatewayHostName: appGatewayHostName
+    appGatewayPrivateIp: appGatewayPrivateIp
   }
 }
