@@ -103,6 +103,18 @@ var backendHttpSettingsName = 'apimBackendSettings'
 var httpListenerName = 'publicHttps'
 var apimRoutingRuleName = 'apimRule'
 
+var wafConfig = {
+  enabled: true
+  firewallMode: 'Prevention'
+  ruleSetType: 'OWASP'
+  ruleSetVersion: '3.2'
+  disabledRuleGroups: []
+  requestBodyCheck: true
+  maxRequestBodySizeInKb: 128
+  fileUploadLimitInMb: 100
+  exclusions: []
+}
+
 resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
   name: appGatewayName
   location: location
@@ -261,6 +273,7 @@ resource appGw 'Microsoft.Network/applicationGateways@2023-09-01' = {
       minCapacity: minInstances
       maxCapacity: maxInstances
     }
+    webApplicationFirewallConfiguration: skuName == 'WAF_v2' ? wafConfig : null
   }
 }
 
