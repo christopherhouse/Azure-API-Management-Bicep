@@ -56,6 +56,7 @@ module apimNsg './modules/networkSecurityGroup/apimNetworkSecurityGroup.bicep' =
     nsgName: apimNsgName
     apimSubnetRange: subnetConfigurations.apimSubnet.addressPrefix
     appGatewaySubnetRange: subnetConfigurations.appGwSubnet.addressPrefix
+    tags: tags
   }
 }
 
@@ -66,6 +67,7 @@ module appGwNsg './modules/networkSecurityGroup/applicationGatewayNetworkSecurit
     appGatewaySubnetAddressSpace: subnetConfigurations.appGwSubnet.addressPrefix
     logAnalyticsWorkspaceResourceId: laws.outputs.id
     networkSecurityGroupName: appGwNsgName
+    tags: tags
   }
 }
 
@@ -78,6 +80,7 @@ module kvNsg './modules/networkSecurityGroup/keyVaultNetworkSecurityGroup.bicep'
     keyVaultSubnetRange: subnetConfigurations.keyVaultSubnet.addressPrefix
     logAnalyticsWorkspaceId: laws.outputs.id
     networkSecurityGroupName: keyVaultNsgName
+    tags: tags
   }
 }
 

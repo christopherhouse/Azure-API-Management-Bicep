@@ -69,6 +69,7 @@ resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
 resource uami 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
   name: uamiName
   location: location
+  tags: tags
 }
 
 resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {

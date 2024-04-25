@@ -65,6 +65,7 @@ module apimUami './modules/managedIdentity/userAssignedManagedIdentity.bicep' = 
   params: {
     location: location
     managedIdentityName: apimUamiName
+    tags: tags
   }
 }
 

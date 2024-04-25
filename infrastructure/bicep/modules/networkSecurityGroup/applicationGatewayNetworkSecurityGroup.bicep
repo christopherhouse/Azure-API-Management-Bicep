@@ -10,8 +10,12 @@ param logAnalyticsWorkspaceResourceId string
 @description('The address space of the subnet where the app gateway is deployed')
 param appGatewaySubnetAddressSpace string
 
+@description('The tags to associate with the API Center resource')
+param tags object = {}
+
 resource nsg 'Microsoft.Network/networkSecurityGroups@2023-09-01' = {
   name: networkSecurityGroupName
+  tags: tags
   location: location
   properties: {
     securityRules: [
