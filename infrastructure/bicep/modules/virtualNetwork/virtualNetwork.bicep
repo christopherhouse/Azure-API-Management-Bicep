@@ -108,6 +108,32 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
           networkSecurityGroup: {
             id: apimNsgResourceId
           }
+          serviceEndpoints: [
+            {
+              service: 'Microsoft.Storage'
+              locations: [
+                location
+              ]
+            }
+            {
+              service: 'Microsoft.Sql'
+              locations: [
+                location
+              ]
+            }
+            {
+              service: 'Microsoft.KeyVault'
+              locations: [
+                location
+              ]
+            }
+            {
+              service: 'Microsoft.EventHub'
+              locations: [
+                location
+              ]
+            }
+          ]
         }
       }
       {
