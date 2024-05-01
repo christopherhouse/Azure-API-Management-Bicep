@@ -133,6 +133,12 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
                 location
               ]
             }
+            {
+              service: 'Microsoft.ServiceBus'
+              locations: [
+                location
+              ]
+            }
           ]
         }
       }
