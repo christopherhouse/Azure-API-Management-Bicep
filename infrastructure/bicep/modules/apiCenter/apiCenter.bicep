@@ -7,15 +7,19 @@ param location string
 @description('The name of the API Center workspace to create')
 param apiCenterWorkspaceName string
 
+@allowed(['Free'])
+param sku string
+
 @description('The tags to associate with the API Center resource')
 param tags object = {}
 
 resource apiCenter 'Microsoft.ApiCenter/services@2024-03-01' = {
   name: apiCenterName
   tags: tags
-  location: 'eastus' // Hardcoded to eastus for now since API Center is available in limited environments
+  location: location
+  #disable-next-line BCP187 // Probably will need to be updated as API Center moves to GA
   sku: {
-    name: 'None'
+    name: sku
   }
   properties: {
   }

@@ -6,6 +6,7 @@ param apimSubnetName string
 param appGwSubnetName string
 param logAnalyticsWorkspaceName string
 param keyVaultName string
+param provisionApimPublicIp bool
 param apimPublisherEmailAddress string
 param apimPublisherOrganizationName string
 @allowed(['Developer', 'Premium']) // APIM module assumes vnet integration, so only allow vnet enabled SKUs
@@ -21,15 +22,15 @@ param appGatewayTslCertSecretName string
 param appGatewayHostName string
 param appGatewayPrivateIp string
 param apiCenterWorkspaceName string
+@allowed(['Free'])
+param apiCenterSku string
+param apiCenterLocation string
 param tags object = {}
 param deploymentId string = substring(newGuid(), 0, 8)
 
 // APIM
 var apimName = '${workloadName}-${environmentSuffix}-apim'
 var apimDeploymentName = '${apimName}-${deploymentId}'
-
-var apimPipName = '${apimName}-pip'
-var apimPipDeploymentName = '${apimPipName}-${deploymentId}'
 
 // APIM only allows 1 scale unit for Developer, so overrite apimSkuCapacity if Developer SKU and force capacity = 1
 var apimCapacity = apimSkuName == 'Developer' ? 1 : apimSkuCapacity
@@ -69,16 +70,6 @@ module apimUami './modules/managedIdentity/userAssignedManagedIdentity.bicep' = 
   }
 }
 
-module apimPip './modules/publicIpAddress/publicIpAddress.bicep' = {
-  name: apimPipDeploymentName
-  params: {
-    location: location
-    publicIpAddressName: apimPipName
-    logAnalyticsWorkspaceId: laws.id
-    tags: tags
-  }
-}
-
 module apim './modules/apiManagement/apiManagementService.bicep' = {
   name: apimDeploymentName
   params: {
@@ -87,7 +78,6 @@ module apim './modules/apiManagement/apiManagementService.bicep' = {
     deploymentId: deploymentId
     keyVaulName: keyVaultName
     logAnalyticsWorkspaceId: laws.id
-    publicIpResourceId: apimPip.outputs.id
     publisherEmailAddress: apimPublisherEmailAddress
     publisherOrganizationName: apimPublisherOrganizationName
     skuCapacity: apimCapacity
@@ -97,6 +87,7 @@ module apim './modules/apiManagement/apiManagementService.bicep' = {
     vnetIntegrationMode: apimVnetIntegrationMode
     vnetResourceId: vnet.id
     vnetSubnetResourceId: apimSubnet.id
+    provisionPublicIp: provisionApimPublicIp
     tags: tags
   }
 }
@@ -124,9 +115,10 @@ module appGw './modules/applicationGateway/applicationGateway.bicep' = {
 module apiCenter './modules/apiCenter/apiCenter.bicep' = {
   name: apiCenterDeploymentName
   params: {
-    location: location
+    location: apiCenterLocation
     apiCenterName: apiCenterName
     apiCenterWorkspaceName: apiCenterWorkspaceName
+    sku: apiCenterSku
     tags: tags
   }
 }

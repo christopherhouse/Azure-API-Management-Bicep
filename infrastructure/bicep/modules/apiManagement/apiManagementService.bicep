@@ -24,9 +24,6 @@ param vnetIntegrationMode string
 @description('The resource id of the subnet to integrate with')
 param vnetSubnetResourceId string
 
-@description('The resource id of the public IP address that will be attached to APIM')
-param publicIpResourceId string
-
 @description('The resource id of the user assigned managed identity that will be used to access the key vault')
 param userAssignedManagedIdentityResourceId string
 
@@ -44,6 +41,9 @@ param vnetResourceId string
 
 @description('An array of hostname configurations that will be used to configure the APIM instance')
 param hostNameConfigurations hostNameConfigurationsType = []
+
+@description('A flag indicating whether the APIM instance should provision a public IP address')
+param provisionPublicIp bool
 
 @description('A flag indicating whether the APIM instance should be zone redundant')
 param zoneRedundant bool = false
@@ -73,6 +73,8 @@ var hostNameConfigs = [for hostNameConfig in hostNameConfigurations: {
 }]
 
 var kvSecretsUserRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
+var apimPublicIpName = '${apiManagementServiceName}-pip'
+var apimPublicIpDeploymentName = '${apiManagementServiceName}-pip-${deployment().name}'
 
 var zones = zoneRedundant ? ['1', '2', '3'] : []
 
@@ -106,6 +108,15 @@ resource kvRoleAssignmentSMI 'Microsoft.Authorization/roleAssignments@2022-04-01
   }
 }
 
+module apimPip '../publicIpAddress/publicIpAddress.bicep' = if(provisionPublicIp) {
+  name: apimPublicIpDeploymentName
+  params: {
+    location: location
+    logAnalyticsWorkspaceId: logAnalyticsWorkspaceId 
+    publicIpAddressName: apimPublicIpName
+  }
+}
+
 resource apiManagementService 'Microsoft.ApiManagement/service@2023-03-01-preview' = {
   name: apiManagementServiceName
   tags: tags
@@ -131,7 +142,7 @@ resource apiManagementService 'Microsoft.ApiManagement/service@2023-03-01-previe
     virtualNetworkConfiguration: {
       subnetResourceId: vnetSubnetResourceId
     }
-    publicIpAddressId: publicIpResourceId
+    publicIpAddressId: provisionPublicIp ? apimPip.outputs.id : null
   }
   zones: zones
 }
